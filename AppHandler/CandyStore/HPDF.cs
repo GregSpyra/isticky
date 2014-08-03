@@ -1,24 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace pep.AppHandler
+namespace pep.AppHandler.CandyStore
 {
-	/// <summary>
-	/// Interface for wrapped data content
-	/// Delivers secure execution space for sticky policy data
-	/// </summary>
-    public interface ICandy
-	{
-		void OpenDefault();
-
-		void PlantFile(byte[] FileContent, out string FilePath);
-	}
-
     public class HPDF : ICandy, IDisposable
 	{
 		#region Variables
@@ -26,12 +16,18 @@ namespace pep.AppHandler
 
 		private MemoryMappedFile _mmFile;
 		//private MemoryMappedViewStream _mmViewStream;
+		private string _filePath;
 		#endregion
 
 		#region Constructors
 		public HPDF()
 		{
 
+		}
+
+		public HPDF(byte[] FileContent)
+		{
+			this.PlantFile(FileContent, out this._filePath);
 		}
 		#endregion
 
@@ -45,7 +41,24 @@ namespace pep.AppHandler
 		/// </summary>
 		public void OpenDefault()
 		{
-			throw new NotImplementedException();
+			try
+			{
+				Process.Start(this._filePath);
+			}
+			catch (Exception eX)
+			{
+				throw new Exception(string.Format("{0}::{1}", new StackFrame(0, true).GetMethod().Name, eX.Message));
+			}
+		}
+
+		
+		/// <summary>
+		/// Creates MemoryMappedFile for unwrapped policy data
+		/// </summary>
+		/// <param name="FileContent">Data file content</param>
+		public void PlantFile(byte[] FileContent)
+		{
+			this.PlantFile(FileContent, out this._filePath);
 		}
 
 		/// <summary>
@@ -53,9 +66,11 @@ namespace pep.AppHandler
 		/// </summary>
 		/// <param name="FileContent">Data file content</param>
 		/// <param name="FilePath">Path for newly generated file</param>
-		public void PlantFile(byte[] FileContent, out string FilePath)
+		private void PlantFile(byte[] FileContent, out string FilePath)
 		{
-			FilePath = Guid.NewGuid().ToString();
+			Candy.FileTypeExtension fileExtension = Candy.GetFileTypeExtensionFromSignature(ref FileContent);
+			FilePath = String.Format(@"{0}.{1}", Guid.NewGuid().ToString(), fileExtension);
+
 			this._mmFile = MemoryMappedFile.CreateNew(FilePath, FileContent.LongLength);
 			
 			using (MemoryMappedViewStream mmViewStream = this._mmFile.CreateViewStream())
