@@ -13,9 +13,7 @@ namespace pep.AppHandler.CandyStore
 	{
 		#region Variables
 		private bool _bDisposed;
-
-		private MemoryMappedFile _mmFile;
-		//private MemoryMappedViewStream _mmViewStream;
+		private FileStream _fileStream;
 		private string _filePath;
 		#endregion
 
@@ -43,7 +41,11 @@ namespace pep.AppHandler.CandyStore
 		{
 			try
 			{
-				Process.Start(this._filePath);
+				using(Process processHandle = new Process {StartInfo =  new ProcessStartInfo(this._filePath)})
+				{
+					processHandle.Start();
+					processHandle.WaitForExit();
+				}
 			}
 			catch (Exception eX)
 			{
@@ -69,16 +71,13 @@ namespace pep.AppHandler.CandyStore
 		private void PlantFile(byte[] FileContent, out string FilePath)
 		{
 			Candy.FileTypeExtension fileExtension = Candy.GetFileTypeExtensionFromSignature(ref FileContent);
-			FilePath = String.Format(@"{0}.{1}", Guid.NewGuid().ToString(), fileExtension);
-
-			this._mmFile = MemoryMappedFile.CreateNew(FilePath, FileContent.LongLength);
+			FilePath = String.Format(@"{0}\{1}.{2}", Path.GetTempPath(), Guid.NewGuid(), fileExtension);
 			
-			using (MemoryMappedViewStream mmViewStream = this._mmFile.CreateViewStream())
+			this._fileStream = new FileStream(FilePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+
+			using (BinaryWriter binWriter = new BinaryWriter(this._fileStream))
 			{
-				using (BinaryWriter binWriter = new BinaryWriter(mmViewStream))
-				{
-					binWriter.Write(FileContent);
-				}
+				binWriter.Write(FileContent);
 			}
 		}
 		#endregion
@@ -96,8 +95,8 @@ namespace pep.AppHandler.CandyStore
 			{
 				if (bDisposing)
 				{
-					//this._mmViewStream.Dispose();
-					this._mmFile.Dispose();
+					this._fileStream.Dispose();
+					File.Delete(this._filePath);
 				}
 
 				this._bDisposed = true;

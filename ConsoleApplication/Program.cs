@@ -14,6 +14,7 @@ namespace pep.AppHandler.ConsoleApplicationn
 			string filePath = @"C:\Projects\iSticky\ConsoleApplication\ResearchAndReferencing.pdf";
 			using (pep.AppHandler.CandyStore.HPDF pdfCandy = new pep.AppHandler.CandyStore.HPDF(File.ReadAllBytes(filePath)))
 			{
+			
 				pdfCandy.OpenDefault();
 			}
         }
