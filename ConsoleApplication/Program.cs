@@ -10,6 +10,10 @@ namespace ConsoleApplication
     {
         static void Main(string[] args)
         {
+			using (pep.AppHandler.HPDF pdfCandy = new pep.AppHandler.HPDF())
+			{
+
+			}
         }
     }
 }
