@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,6 +16,10 @@ namespace pep.AppHandler.CandyStore
 		private bool _bDisposed;
 		private FileStream _fileStream;
 		private string _filePath;
+
+		private FileSystemRights _fileSystemRights;
+		private FileSecurity _fileSecurity;
+		private FileOptions _fileOptions;
 		#endregion
 
 		#region Constructors
@@ -73,9 +78,15 @@ namespace pep.AppHandler.CandyStore
 			Candy.FileTypeExtension fileExtension = Candy.GetFileTypeExtensionFromSignature(ref FileContent);
 			FilePath = String.Format(@"{0}\{1}.{2}", Path.GetTempPath(), Guid.NewGuid(), fileExtension);
 			
-			this._fileStream = new FileStream(FilePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+			this._fileSystemRights = FileSystemRights.Read | FileSystemRights.CreateFiles;
+			this._fileOptions = FileOptions.Encrypted;
+			
+			//Define complete access control rights
+			//this._fileSecurity.
 
-			using (BinaryWriter binWriter = new BinaryWriter(this._fileStream))
+			this._fileStream = new FileStream(FilePath, FileMode.CreateNew, this._fileSystemRights, FileShare.None, 8, this._fileOptions, this._fileSecurity);
+
+			using (	BinaryWriter binWriter = new BinaryWriter(this._fileStream))
 			{
 				binWriter.Write(FileContent);
 			}
