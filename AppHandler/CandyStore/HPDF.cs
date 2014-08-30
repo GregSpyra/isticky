@@ -85,7 +85,7 @@ namespace pep.AppHandler.CandyStore
 			//this._fileSecurity.
 
 			this._fileStream = new FileStream(FilePath, FileMode.CreateNew, this._fileSystemRights, FileShare.None, 8, this._fileOptions, this._fileSecurity);
-
+			 
 			using (	BinaryWriter binWriter = new BinaryWriter(this._fileStream))
 			{
 				binWriter.Write(FileContent);

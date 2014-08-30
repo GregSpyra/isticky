@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHandler", "AppHandler\Ap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pep", "pep", "{496C2933-A2CA-4E11-9E44-10753B15E0BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppViewer", "AppViewer\AppViewer.csproj", "{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -27,6 +29,10 @@ Global
 		{7F9EEEB1-3698-4AB5-BE66-8B82F7161A8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F9EEEB1-3698-4AB5-BE66-8B82F7161A8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F9EEEB1-3698-4AB5-BE66-8B82F7161A8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -34,5 +40,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EC1FD466-EB9A-46EC-8B0C-AF7DF9AC866E} = {496C2933-A2CA-4E11-9E44-10753B15E0BD}
 		{7F9EEEB1-3698-4AB5-BE66-8B82F7161A8A} = {496C2933-A2CA-4E11-9E44-10753B15E0BD}
+		{84A3AD4D-A8DC-4AA3-AE71-635E19D8E9E7} = {496C2933-A2CA-4E11-9E44-10753B15E0BD}
 	EndGlobalSection
 EndGlobal
