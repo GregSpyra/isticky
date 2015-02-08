@@ -1,10 +1,13 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Transactions;
 using System.Threading.Tasks;
 
 namespace pep.AppHandler.CandyDelivery
@@ -13,20 +16,25 @@ namespace pep.AppHandler.CandyDelivery
 	/// Class handing SqlFileStreams for documents
 	/// </summary>
 	public class SingleStream : IDisposable
-	{
-		#region Variables
-		private bool disposed = false;
+    {
+        #region Constants
+        private const int packetSize = 10 * 1000 * 1024; //[MB]
+        #endregion
+
+        #region Variables
+        private bool disposed = false;
 		private string metaDataID;
 		private FileStreamer fileStreamer;
-		private SqlFileStream fileStream;
+		private Stream stream;
+		SqlTransaction sqlTransaction;
 		#endregion
 
 		#region Properties
-		public SqlFileStream FileStream
+		public Stream Stream
 		{
 			get
 			{
-				return this.fileStream;
+				return this.stream;
 			}
 		}
 		#endregion
@@ -36,7 +44,7 @@ namespace pep.AppHandler.CandyDelivery
 		{
 			this.fileStreamer = fileStreamer;
 			this.metaDataID = metaDataID;
-			this.fileStream = GetData();
+			this.stream = GetData();
 		}
 		#endregion
 
@@ -44,6 +52,8 @@ namespace pep.AppHandler.CandyDelivery
 		private SqlFileStream GetData()
 		{
 			const string sqlTransactionQuery = @"SELECT GET_FILESTREAM_TRANSACTION_CONTEXT()";
+            //byte[] buffer;
+            //UInt32 position = 0;
 
 			string sqlQuery = String.Format(@"
 SELECT TOP 1
@@ -52,19 +62,18 @@ FROM
 	[NEHST].[dbo].[MetaData]
 WHERE
 	[MetaDataID] = '{0}'", this.metaDataID);
-
+            
 			this.fileStreamer.SqlConnection.Open();
-
 			using (SqlCommand sqlCommand = new SqlCommand(sqlQuery, this.fileStreamer.SqlConnection))
 			{
 				string filePath = (string)sqlCommand.ExecuteScalar();
 
-				using (SqlTransaction sqlTransaction = this.fileStreamer.SqlConnection.BeginTransaction())
-				{
-					sqlCommand.Transaction = sqlTransaction;
-					sqlCommand.CommandText = sqlTransactionQuery;
-					return new SqlFileStream(filePath, (byte[])sqlCommand.ExecuteScalar(), FileAccess.ReadWrite);
-				}
+				//using (SqlTransaction sqlTransaction 
+				this.sqlTransaction = this.fileStreamer.SqlConnection.BeginTransaction();
+				sqlCommand.Transaction = sqlTransaction;
+				sqlCommand.CommandText = sqlTransactionQuery;
+
+				return new SqlFileStream(filePath, (byte[])sqlCommand.ExecuteScalar(), FileAccess.Read);
 			}
 		}
 		#endregion
@@ -82,8 +91,10 @@ WHERE
 			{
 				if (disposing)
 				{
-					if (this.fileStream != null)
-						this.fileStream.Dispose();
+					if (this.stream != null)
+						this.stream.Dispose();
+					if (this.sqlTransaction != null)
+						this.sqlTransaction.Dispose();
 				}
 
 				this.disposed = true;

@@ -13,8 +13,8 @@ namespace UnitTest
 		public void TestMethod1()
 		{
 
-			//string connectionString = @"Persist Security Info=False;Integrated Security=SSPI;database=NEHST;server=WIN-TK7VVQF2IT3;Connect Timeout=120";
-			string connectionString = @"Persist Security Info=False;Trusted_Connection=False;database=NEHST;server=WIN-TK7VVQF2IT3;Connect Timeout=120;User ID=developer;password=Secure123";
+			string connectionString = @"Persist Security Info=False;Integrated Security=SSPI;database=NEHST;server=WIN-TK7VVQF2IT3;Connect Timeout=120";
+			//string connectionString = @"Persist Security Info=False;Trusted_Connection=False;database=NEHST;server=WIN-TK7VVQF2IT3;Connect Timeout=120;User ID=developer;password=Secure123";
 			
 			using ( Master candy = new Master() )
 			{
@@ -23,6 +23,7 @@ namespace UnitTest
 					List<SingleStream> streams = new List<SingleStream>();
 					streams.Add(new SingleStream(fileStreamer, @"FE8F3116-99A4-E411-9403-000C29E5BED1"));
 
+                    candy.Wrap(streams);
 				}
 			}
 		}

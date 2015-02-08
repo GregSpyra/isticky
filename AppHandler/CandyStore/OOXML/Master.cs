@@ -20,13 +20,15 @@ namespace pep.AppHandler.CandyStore.OOXML
 		private bool disposed = false;
 		private string name;
 		private WordprocessingDocument data;
+        private MemoryStream memoryStream;
 		#endregion
 
 		#region Constructors
 		public Master()
 		{
 			this.name = Guid.NewGuid().ToString();
-			this.data = WordprocessingDocument.Create(this.name, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true);
+            this.memoryStream = new MemoryStream();
+			this.data = WordprocessingDocument.Create(this.memoryStream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true);
 		}
 		#endregion
 
@@ -38,13 +40,17 @@ namespace pep.AppHandler.CandyStore.OOXML
 		public void Wrap(List<SingleStream> documents)
 		{
 			string altChunkId = "AltChunkId1";
-			MainDocumentPart mainPart = this.data.MainDocumentPart;
+            MainDocumentPart mainPart = this.data.AddMainDocumentPart();
 			AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(
 				AlternativeFormatImportPartType.WordprocessingML, altChunkId);
 			foreach(SingleStream singleStream in documents)
 			{
-				//FileMode.Open
-				chunk.FeedData(singleStream.FileStream);
+                OpenSettings settings = new OpenSettings();
+                settings.AutoSave = false;
+                WordprocessingDocument doc = WordprocessingDocument.Open(singleStream.Stream, false, settings);
+
+                //FileMode.Open
+				chunk.FeedData((Stream)singleStream.Stream);
 				AltChunk altChunk = new AltChunk();
 				altChunk.Id = altChunkId;
 				mainPart.Document
