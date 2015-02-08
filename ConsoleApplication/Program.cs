@@ -1,10 +1,12 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace pep.AppHandler.ConsoleApplicationn
 {
@@ -17,6 +19,24 @@ namespace pep.AppHandler.ConsoleApplicationn
 			using (pep.AppHandler.CandyStore.HPDF pdfCandy = new pep.AppHandler.CandyStore.HPDF(File.ReadAllBytes(filePath)))
 			{
 				pdfCandy.OpenDefault();
+			}
+
+
+			WordprocessingDocument docX = GetData();
+			//using (WordprocessingDocument myDoc = WordprocessingDocument.Create("Test1.docx", DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true))
+			{
+				string altChunkId = "AltChunkId1";
+				MainDocumentPart mainPart = myDoc.MainDocumentPart;
+				AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(
+					AlternativeFormatImportPartType.WordprocessingML, altChunkId);
+				using (FileStream fileStream = File.Open("TestInsertedContent.docx", FileMode.Open))
+					chunk.FeedData(fileStream);
+				AltChunk altChunk = new AltChunk();
+				altChunk.Id = altChunkId;
+				mainPart.Document
+					.Body
+					.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
+				mainPart.Document.Save();
 			}
         }
     }
