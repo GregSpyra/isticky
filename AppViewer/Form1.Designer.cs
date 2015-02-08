@@ -1,4 +1,4 @@
-﻿namespace AppViewer
+﻿namespace pep.AppViewer
 {
 	partial class Form1
 	{

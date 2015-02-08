@@ -8,9 +8,9 @@ using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace pep.AppHandler.CandyStore
+namespace pep.AppHandler.CandyStore.PDF
 {
-    public class HPDF : ICandy, IDisposable
+    public class HPDF : IDisposable
 	{
 		#region Variables
 		private bool _bDisposed;
@@ -75,7 +75,7 @@ namespace pep.AppHandler.CandyStore
 		/// <param name="FilePath">Path for newly generated file</param>
 		private void PlantFile(byte[] FileContent, out string FilePath)
 		{
-			Candy.FileTypeExtension fileExtension = Candy.GetFileTypeExtensionFromSignature(ref FileContent);
+			Document.FileTypeExtension fileExtension = Document.GetFileTypeExtensionFromSignature(ref FileContent);
 			FilePath = String.Format(@"{0}\{1}.{2}", Path.GetTempPath(), Guid.NewGuid(), fileExtension);
 			
 			this._fileSystemRights = FileSystemRights.Read | FileSystemRights.CreateFiles;

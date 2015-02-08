@@ -36,6 +36,7 @@
     <AssemblyOriginatorKeyFile>keyPair.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,11 +44,18 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CandyDelivery\FileStreamer.cs" />
+    <Compile Include="CandyDelivery\SingleStream.cs" />
     <Compile Include="CandyStore\Candy.cs" />
-    <Compile Include="CandyStore\HPDF.cs" />
+    <Compile Include="CandyStore\PDF\Document.cs" />
+    <Compile Include="CandyStore\PDF\HPDF.cs" />
     <Compile Include="CandyStore\ICandy.cs" />
+    <Compile Include="CandyStore\IDocument.cs" />
+    <Compile Include="CandyStore\OOXML\Document.cs" />
+    <Compile Include="CandyStore\OOXML\Master.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

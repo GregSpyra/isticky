@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace pep.AppHandler.CandyStore
+namespace pep.AppHandler.CandyStore.PDF
 {
-	class Candy
+	class Document
 	{
 		#region Enums
 		public enum FileTypeExtension

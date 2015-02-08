@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>5e8f08de-eea7-426a-974f-e6d50789dc7f</ProjectGuid>
+    <ProjectGuid>{8E832E59-61E2-4C07-B80B-72182C913427}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UnitTest</RootNamespace>
@@ -52,6 +52,20 @@
   <ItemGroup>
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppHandler\AppHandler.csproj">
+      <Project>{7f9eeeb1-3698-4ab5-be66-8b82f7161a8a}</Project>
+      <Name>AppHandler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AppViewer\AppViewer.csproj">
+      <Project>{84a3ad4d-a8dc-4aa3-ae71-635e19d8e9e7}</Project>
+      <Name>AppViewer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ConsoleApplication\ConsoleApplication.csproj">
+      <Project>{ec1fd466-eb9a-46ec-8b0c-af7df9ac866e}</Project>
+      <Name>ConsoleApplication</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
