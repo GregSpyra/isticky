@@ -58,8 +58,6 @@
 		}
 
 		#endregion
-
-		private AxAcroPDFLib.AxAcroPDF form_axAcroPDF;
 	}
 }
 

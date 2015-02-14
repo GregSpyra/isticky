@@ -76,7 +76,15 @@ namespace pep.AppHandler.CandyStore.OOXML
 
 		public void AddPolicy(XmlDocument xmlDocument)
 		{
-			CustomFilePropertiesPart customProperty = this.data.AddCustomFilePropertiesPart();
+			CustomFilePropertiesPart customProperty;
+			if (this.data.CustomFilePropertiesPart == null)
+			{
+				customProperty = this.data.AddCustomFilePropertiesPart();
+			}
+			else
+			{
+				customProperty = this.data.CustomFilePropertiesPart;
+			}
 			xmlDocument.Save(customProperty.GetStream());
 		}
 		#endregion
