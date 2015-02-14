@@ -14,7 +14,7 @@ namespace pep.AppHandler.CandyStore.OOXML
 	/// <summary>
 	/// Class responsible for handling OOXML master document generation
 	/// </summary>
-	public class Master : IDisposable
+	public class XMaster : IDisposable
 	{
 		#region Variables
 		private bool disposed = false;
@@ -24,7 +24,7 @@ namespace pep.AppHandler.CandyStore.OOXML
 		#endregion
 
 		#region Constructors
-		public Master()
+		public XMaster()
 		{
 			this.name = Guid.NewGuid().ToString();
             this.memoryStream = new MemoryStream();

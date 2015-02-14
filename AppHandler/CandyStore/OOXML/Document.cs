@@ -2,23 +2,32 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+
+using pep.AppHandler.CandyDelivery;
 
 namespace pep.AppHandler.CandyStore.OOXML
 {
 	/// <summary>
 	/// Class handing low level OOXML document operations
 	/// </summary>
-	public class Document : IDisposable
+	public class XDocument : IDisposable
 	{
 		#region Variables
 		private bool disposed = false;
 		private WordprocessingDocument data;
+		private SingleStream singleStream;
+		private byte[] policy;
 		#endregion
 
 		#region Properties
+		/// <summary>
+		/// OOXML document property
+		/// </summary>
 		public WordprocessingDocument Data
 		{
 			get
@@ -36,29 +45,74 @@ namespace pep.AppHandler.CandyStore.OOXML
 		/// <summary>
 		/// Creates an instance of a single OOXML document
 		/// </summary>
-		public Document()
+		/// <param name="singleStream">Document file stream</param>
+		public XDocument(SingleStream singleStream)
 		{
-			//this.data = this.GetDocument();
+			this.singleStream = singleStream;
+			this.WrapDocument(FileAccess.Read);
+		}
+
+		/// <summary>
+		/// Creates an instance of a single OOXML document supporting basic access control functionality
+		/// </summary>
+		/// <param name="singleStream">Document file stream</param>
+		/// <param name="fileAccess">Access type</param>
+		public XDocument(SingleStream singleStream, FileAccess fileAccess)
+		{
+			this.singleStream = singleStream;
+			this.WrapDocument(fileAccess);
 		}
 		#endregion
 
 		#region Public Methods
-		public WordprocessingDocument OpenDefault()
+		/// <summary>
+		/// Returns single OOXML document
+		/// </summary>
+		/// <returns>Single OOXML document</returns>
+		public WordprocessingDocument GetDocument()
 		{
 			return this.data;
+		}
+
+		public void AddPolicy(XmlDocument xmlDocument)
+		{
+			CustomFilePropertiesPart customProperty = this.data.AddCustomFilePropertiesPart();
+			xmlDocument.Save(customProperty.GetStream());
 		}
 		#endregion
 
 		#region Private Methods
 		/// <summary>
-		/// Method retrieves OOXML document from SqlFileStream
+		/// Method wraps document stream into OOXML document
 		/// </summary>
+		private void WrapDocument(FileAccess fileAccess)
+		{
+			OpenSettings settings = new OpenSettings();
+			settings.AutoSave = false;
+			this.data = WordprocessingDocument.Open(singleStream.Stream, (fileAccess == FileAccess.ReadWrite), settings);
+		}
+
+		/// <summary>
+		/// Method tries openning OOXML document from the stream
+		/// </summary>
+		/// <param name="singleStream">Document stream</param>
+		/// <param name="document">Opened out OOXML document</param>
 		/// <returns></returns>
-		//private WordprocessingDocument GetDocument()
-		//{
-			//using (CandyDelivery.SingleStream fileStreamer = new CandyDelivery.SingleStream())
-			//	return WordprocessingDocument.Create(fileStreamer.FileStream, DocumentFormat.OpenXml.WordprocessingDocumentType.Document);
-		//}
+		private bool TryOpenFromStream(SingleStream singleStream, out WordprocessingDocument document)
+		{
+			OpenSettings settings = new OpenSettings();
+			settings.AutoSave = false;
+			try
+			{
+				document = WordprocessingDocument.Open(singleStream.Stream, false, settings);
+			}
+			catch
+			{
+				document = null;
+				return false;
+			}
+			return true;
+		}
 		#endregion
 
 		#region IDisposable Members
@@ -75,7 +129,12 @@ namespace pep.AppHandler.CandyStore.OOXML
 				if (disposing)
 				{
 					if (this.data != null)
+						this.data.Close();
 						this.data.Dispose();
+					if (this.singleStream != null)
+					{
+						singleStream.Dispose();
+					}
 				}
 
 				this.disposed = true;
