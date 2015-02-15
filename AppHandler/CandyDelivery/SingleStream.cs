@@ -6,9 +6,14 @@ using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Security.AccessControl;
+using System.Security.Permissions;
+using System.Security.Principal;
 using System.Text;
-using System.Transactions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace pep.AppHandler.CandyDelivery
 {
@@ -137,6 +142,7 @@ WHERE
 				sqlCommand.Transaction = this.sqlTransaction;
 
 				string filePath = (string)sqlCommand.ExecuteScalar();
+				//SetRemoteSecurityContext(filePath);
 
 				sqlCommand.CommandText = SQL_TRANS_QUERY;
 
@@ -146,6 +152,25 @@ WHERE
 		}
 		#endregion
 
+		private void SetRemoteSecurityContext(string filePath)
+		{
+			string securityContext = Thread.CurrentPrincipal.Identity.Name;
+			FileSystemAccessRule rule = new FileSystemAccessRule(securityContext, FileSystemRights.Write, AccessControlType.Allow); 
+
+			PermissionSet permissionSet = new PermissionSet(PermissionState.Unrestricted);
+			permissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read, new string[] { filePath }));
+			permissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Write | FileIOPermissionAccess.PathDiscovery, new string[] { filePath })); 
+			permissionSet.Assert();
+
+			DirectoryInfo dirInfo = new DirectoryInfo(Path.GetDirectoryName(filePath)); 
+
+
+			bool what = false; 
+			DirectorySecurity security = dirInfo.GetAccessControl(); 
+
+			security.ModifyAccessRule(AccessControlModification.Add, rule, out what); 
+			dirInfo.SetAccessControl(security); 
+		}
 		#region IDisposable Members
 		public void Dispose()
 		{
