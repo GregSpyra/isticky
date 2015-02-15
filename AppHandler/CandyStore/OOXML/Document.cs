@@ -97,18 +97,18 @@ namespace pep.AppHandler.CandyStore.OOXML
 		/// <summary>
 		/// Adds new XACML policy to OOXML document - no force
 		/// </summary>
-		/// <param name="xmlDocument">XACML policy document</param>
-		public  void AddPolicy(XmlDocument xmlDocument)
+		/// <param name="xmlPolicy">XACML policy document</param>
+		public  void AddPolicy(XmlDocument xmlPolicy)
 		{
-			AddPolicy(xmlDocument, false);
+			AddPolicy(xmlPolicy, false);
 		}
 
 		/// <summary>
 		/// Adds new XACML policy to OOXML document
 		/// </summary>
-		/// <param name="xmlDocument">XACML policy document</param>
+		/// <param name="xmlPolicy">XACML policy document</param>
 		/// <param name="force">Force old policy replacement if exists</param>
-		public void AddPolicy(XmlDocument xmlDocument, bool force)
+		public void AddPolicy(XmlDocument xmlPolicy, bool force)
 		{
 			this.data.Close();
 			using( Package package = Package.Open(this.singleStream.Stream, FileMode.Open, FileAccess.ReadWrite) )
@@ -119,30 +119,51 @@ namespace pep.AppHandler.CandyStore.OOXML
 					PackagePart packagePart = package.CreatePart(uriLocation, CNT_PART_TYPE_POLICY);
 					using(Stream stream = packagePart.GetStream(FileMode.Create, FileAccess.ReadWrite))
 					{
-						xmlDocument.Save(stream);
+						xmlPolicy.Save(stream);
 					}
 				}
 			}
 			this.data = WordprocessingDocument.Open(this.singleStream.Stream, true);
+		}
 
-			//MainDocumentPart mainPart = this.data.MainDocumentPart;
-			//if(force)
-			//{ 
-			//	mainPart.DeleteParts<CustomXmlPart>(mainPart.CustomXmlParts);
-			//}
-			//CustomXmlPart xmlPart = new CustomXmlPart();
-			
-
-			//CustomFilePropertiesPart customProperty;
-			//if (this.data.CustomFilePropertiesPart == null)
-			//{
-			//	customProperty = this.data.AddCustomFilePropertiesPart();
-			//}
-			//else
-			//{
-			//	customProperty = this.data.CustomFilePropertiesPart;
-			//}
-			//xmlDocument.Save(customProperty.GetStream());
+		/// <summary>
+		/// Tries to get XACML policy from the OOXML document
+		/// </summary>
+		/// <param name="xmlPolicy">Out XACML XML document policy</param>
+		/// <returns>True on success</returns>
+		public bool TryGetPolicy(out XmlDocument xmlPolicy)
+		{
+			xmlPolicy = null;
+			try
+			{
+				this.data.Close();
+				using (Package package = Package.Open(this.singleStream.Stream, FileMode.Open, FileAccess.Read))
+				{
+					Uri uriLocation = new Uri(URI_REL_POLICY, UriKind.Relative);
+					if (package.PartExists(uriLocation))
+					{
+						PackagePart packagePart = package.GetPart(uriLocation);
+						using (Stream stream = packagePart.GetStream(FileMode.Open, FileAccess.Read))
+						{
+							xmlPolicy = new XmlDocument();
+							xmlPolicy.Load(stream);
+							return true;
+						}
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
+			catch
+			{
+				return false;
+			}
+			finally
+			{
+				this.data = WordprocessingDocument.Open(this.singleStream.Stream, true);
+			}
 		}
 		#endregion
 

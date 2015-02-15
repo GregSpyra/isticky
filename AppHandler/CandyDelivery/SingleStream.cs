@@ -44,6 +44,18 @@ namespace pep.AppHandler.CandyDelivery
 				return this.stream;
 			}
 		}
+
+		public string MetaDataID
+		{
+			get
+			{
+				return this.metaDataID;
+			}
+			set
+			{
+				this.metaDataID = value;
+			}
+		}
 		#endregion
 
 		#region Constructors
@@ -53,7 +65,7 @@ namespace pep.AppHandler.CandyDelivery
 			this.fileStreamer = fileStreamer;
 			this.fileAccess = FileAccess.ReadWrite;
 			this.UploadData(stream);
-			this.stream = GetData();
+			this.stream = GetStream();
 		}
 
 		public SingleStream(FileStreamer fileStreamer, string metaDataID)
@@ -61,7 +73,7 @@ namespace pep.AppHandler.CandyDelivery
 			this.fileAccess = FileAccess.ReadWrite;
 			this.fileStreamer = fileStreamer;
 			this.metaDataID = metaDataID;
-			this.stream = GetData();
+			this.stream = GetStream();
 		}
 		#endregion
 
@@ -117,7 +129,7 @@ VALUES (0x)";
 			}
 		}
 
-		private SqlFileStream GetData()
+		private SqlFileStream GetStream()
 		{
 			const string SQL_TRANS_QUERY = @"SELECT GET_FILESTREAM_TRANSACTION_CONTEXT()";
             //byte[] buffer;
@@ -187,13 +199,13 @@ WHERE
 					if (this.stream != null)
 						this.stream.Dispose();
 					if (this.sqlTransaction != null)
+						try { this.sqlTransaction.Commit(); } catch { ;}
 						this.sqlTransaction.Dispose();
 				}
 
 				this.disposed = true;
 			}
 		}
-
 		#endregion
 	}
 }
