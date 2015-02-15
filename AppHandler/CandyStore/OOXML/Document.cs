@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,11 @@ namespace pep.AppHandler.CandyStore.OOXML
 	/// </summary>
 	public class XDocument : IDisposable
 	{
+		#region Constraints
+		private const string URI_REL_POLICY = @"/docProps/policy.xml";
+		private const string CNT_PART_TYPE_POLICY = @"application/vnd.openxmlformats-officedocument.customXmlProperties+xml";
+		#endregion
+
 		#region Variables
 		private bool disposed = false;
 		private WordprocessingDocument data;
@@ -74,18 +80,69 @@ namespace pep.AppHandler.CandyStore.OOXML
 			return this.data;
 		}
 
-		public void AddPolicy(XmlDocument xmlDocument)
+		/// <summary>
+		/// Method saves document from stream into file system
+		/// G$ Issues - do not use before fix; documents corrupted>>
+		/// </summary>
+		/// <param name="localPath">New document name and location</param>
+		public void UnloadDocument(string localPath)
 		{
-			CustomFilePropertiesPart customProperty;
-			if (this.data.CustomFilePropertiesPart == null)
+			using(FileStream fileStream = new FileStream(localPath, FileMode.Create))
 			{
-				customProperty = this.data.AddCustomFilePropertiesPart();
+				this.singleStream.Stream.Position = 0;
+				this.singleStream.Stream.CopyTo(fileStream);
 			}
-			else
+		}
+
+		/// <summary>
+		/// Adds new XACML policy to OOXML document - no force
+		/// </summary>
+		/// <param name="xmlDocument">XACML policy document</param>
+		public  void AddPolicy(XmlDocument xmlDocument)
+		{
+			AddPolicy(xmlDocument, false);
+		}
+
+		/// <summary>
+		/// Adds new XACML policy to OOXML document
+		/// </summary>
+		/// <param name="xmlDocument">XACML policy document</param>
+		/// <param name="force">Force old policy replacement if exists</param>
+		public void AddPolicy(XmlDocument xmlDocument, bool force)
+		{
+			this.data.Close();
+			using( Package package = Package.Open(this.singleStream.Stream, FileMode.Open, FileAccess.ReadWrite) )
 			{
-				customProperty = this.data.CustomFilePropertiesPart;
+				Uri uriLocation = new Uri(URI_REL_POLICY, UriKind.Relative);
+				if(!package.PartExists(uriLocation) || force)
+				{
+					PackagePart packagePart = package.CreatePart(uriLocation, CNT_PART_TYPE_POLICY);
+					using(Stream stream = packagePart.GetStream(FileMode.Create, FileAccess.ReadWrite))
+					{
+						xmlDocument.Save(stream);
+					}
+				}
 			}
-			xmlDocument.Save(customProperty.GetStream());
+			this.data = WordprocessingDocument.Open(this.singleStream.Stream, true);
+
+			//MainDocumentPart mainPart = this.data.MainDocumentPart;
+			//if(force)
+			//{ 
+			//	mainPart.DeleteParts<CustomXmlPart>(mainPart.CustomXmlParts);
+			//}
+			//CustomXmlPart xmlPart = new CustomXmlPart();
+			
+
+			//CustomFilePropertiesPart customProperty;
+			//if (this.data.CustomFilePropertiesPart == null)
+			//{
+			//	customProperty = this.data.AddCustomFilePropertiesPart();
+			//}
+			//else
+			//{
+			//	customProperty = this.data.CustomFilePropertiesPart;
+			//}
+			//xmlDocument.Save(customProperty.GetStream());
 		}
 		#endregion
 

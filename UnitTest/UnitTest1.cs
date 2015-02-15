@@ -28,6 +28,8 @@ namespace UnitTest
 					XmlDocument xmlDocument = new XmlDocument();
 					xmlDocument.Load(@"Z:\Projects\Hamster2.5\policy.xml");
 					candy.AddPolicy(xmlDocument);
+
+					candy.UnloadDocument(@"Z:\Projects\Hamster2.5\hamster_eval.docx");
 				}
 			}
 		}
