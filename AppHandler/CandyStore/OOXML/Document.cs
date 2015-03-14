@@ -3,7 +3,6 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,11 +17,6 @@ namespace pep.AppHandler.CandyStore.OOXML
 	/// </summary>
 	public class XDocument : IDisposable
 	{
-		#region Constraints
-		private const string URI_REL_POLICY = @"/docProps/policy.xml";
-		private const string CNT_PART_TYPE_POLICY = @"application/vnd.openxmlformats-officedocument.customXmlProperties+xml";
-		#endregion
-
 		#region Variables
 		private bool disposed = false;
 		private WordprocessingDocument data;
@@ -80,90 +74,18 @@ namespace pep.AppHandler.CandyStore.OOXML
 			return this.data;
 		}
 
-		/// <summary>
-		/// Method saves document from stream into file system
-		/// G$ Issues - do not use before fix; documents corrupted>>
-		/// </summary>
-		/// <param name="localPath">New document name and location</param>
-		public void UnloadDocument(string localPath)
+		public void AddPolicy(XmlDocument xmlDocument)
 		{
-			using(FileStream fileStream = new FileStream(localPath, FileMode.Create))
+			CustomFilePropertiesPart customProperty;
+			if (this.data.CustomFilePropertiesPart == null)
 			{
-				this.singleStream.Stream.Position = 0;
-				this.singleStream.Stream.CopyTo(fileStream);
+				customProperty = this.data.AddCustomFilePropertiesPart();
 			}
-		}
-
-		/// <summary>
-		/// Adds new XACML policy to OOXML document - no force
-		/// </summary>
-		/// <param name="xmlPolicy">XACML policy document</param>
-		public  void AddPolicy(XmlDocument xmlPolicy)
-		{
-			AddPolicy(xmlPolicy, false);
-		}
-
-		/// <summary>
-		/// Adds new XACML policy to OOXML document
-		/// </summary>
-		/// <param name="xmlPolicy">XACML policy document</param>
-		/// <param name="force">Force old policy replacement if exists</param>
-		public void AddPolicy(XmlDocument xmlPolicy, bool force)
-		{
-			this.data.Close();
-			using( Package package = Package.Open(this.singleStream.Stream, FileMode.Open, FileAccess.ReadWrite) )
+			else
 			{
-				Uri uriLocation = new Uri(URI_REL_POLICY, UriKind.Relative);
-				if(!package.PartExists(uriLocation) || force)
-				{
-					PackagePart packagePart = package.CreatePart(uriLocation, CNT_PART_TYPE_POLICY);
-					using(Stream stream = packagePart.GetStream(FileMode.Create, FileAccess.ReadWrite))
-					{
-						xmlPolicy.Save(stream);
-					}
-				}
+				customProperty = this.data.CustomFilePropertiesPart;
 			}
-			this.data = WordprocessingDocument.Open(this.singleStream.Stream, true);
-		}
-
-		/// <summary>
-		/// Tries to get XACML policy from the OOXML document
-		/// </summary>
-		/// <param name="xmlPolicy">Out XACML XML document policy</param>
-		/// <returns>True on success</returns>
-		public bool TryGetPolicy(out XmlDocument xmlPolicy)
-		{
-			xmlPolicy = null;
-			try
-			{
-				this.data.Close();
-				using (Package package = Package.Open(this.singleStream.Stream, FileMode.Open, FileAccess.Read))
-				{
-					Uri uriLocation = new Uri(URI_REL_POLICY, UriKind.Relative);
-					if (package.PartExists(uriLocation))
-					{
-						PackagePart packagePart = package.GetPart(uriLocation);
-						using (Stream stream = packagePart.GetStream(FileMode.Open, FileAccess.Read))
-						{
-							xmlPolicy = new XmlDocument();
-							xmlPolicy.Load(stream);
-							return true;
-						}
-					}
-					else
-					{
-						return false;
-					}
-				}
-			}
-			catch
-			{
-				return false;
-			}
-			finally
-			{
-				this.data = WordprocessingDocument.Open(this.singleStream.Stream, true);
-			}
+			xmlDocument.Save(customProperty.GetStream());
 		}
 		#endregion
 
