@@ -1,0 +1,1 @@
+Sticky Policies access control framework components include all functional elements defined in XACML
